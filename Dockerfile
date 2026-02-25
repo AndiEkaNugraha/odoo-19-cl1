@@ -16,4 +16,6 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip install "fsspec[s3]"
+
 USER odoo

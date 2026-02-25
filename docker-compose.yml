@@ -36,6 +36,7 @@ services:
     volumes:
       - odoo-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons
+      - ./oca/storage:/mnt/oca-storage
     networks:
       - app_network
 
