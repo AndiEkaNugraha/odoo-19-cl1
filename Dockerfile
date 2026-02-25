@@ -2,33 +2,31 @@ FROM odoo:19.0
 
 USER root
 
-# Environment best practice
-ENV DEBIAN_FRONTEND=noninteractive \
-    WKHTMLTOPDF_VERSION=0.12.6.1-3
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install system dependencies + wkhtmltopdf
+# Add Odoo official apt repository
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    gnupg \
     wget \
+    && wget -qO - https://nightly.odoo.com/odoo.key | gpg --dearmor -o /usr/share/keyrings/odoo-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/odoo-archive-keyring.gpg] https://nightly.odoo.com/19.0/nightly/deb/ ./" \
+        > /etc/apt/sources.list.d/odoo.list
+
+# Install wkhtmltopdf + fonts (Odoo-compatible)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wkhtmltopdf \
     fontconfig \
-    libxrender1 \
-    libxext6 \
-    libjpeg-turbo8 \
-    xfonts-75dpi \
-    xfonts-base \
     fonts-dejavu \
     fonts-liberation \
-    && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
-    && apt-get install -y ./wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
-    && rm wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
-    && apt-get purge -y wget \
+    xfonts-75dpi \
+    xfonts-base \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies (explicit, deterministic)
+# Python deps
 RUN pip install --no-cache-dir --break-system-packages \
     qifparse \
     "fsspec[s3]"
 
-# Back to non-root user
 USER odoo
