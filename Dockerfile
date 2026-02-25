@@ -2,25 +2,33 @@ FROM odoo:19.0
 
 USER root
 
-# Install dependencies + wkhtmltopdf recommended version
+# Environment best practice
+ENV DEBIAN_FRONTEND=noninteractive \
+    WKHTMLTOPDF_VERSION=0.12.6.1-3
+
+# Install system dependencies + wkhtmltopdf
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     wget \
     fontconfig \
     libxrender1 \
     libxext6 \
-    libjpeg62-turbo \
+    libjpeg-turbo8 \
     xfonts-75dpi \
     xfonts-base \
-    && wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
-    && apt install -y ./wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
-    && rm wkhtmltox_0.12.6.1-3.bookworm_amd64.deb \
+    fonts-dejavu \
+    fonts-liberation \
+    && wget -q https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
+    && apt-get install -y ./wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
+    && rm wkhtmltox_${WKHTMLTOPDF_VERSION}.bookworm_amd64.deb \
+    && apt-get purge -y wget \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install python packages
+# Python dependencies (explicit, deterministic)
 RUN pip install --no-cache-dir --break-system-packages \
     qifparse \
     "fsspec[s3]"
 
+# Back to non-root user
 USER odoo
