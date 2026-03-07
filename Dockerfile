@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Python deps
 RUN pip install --no-cache-dir --break-system-packages \
     qifparse \
-    "fsspec[s3]"
+    fsspec \
+    packaging \
+    gdrivefs \
+    fsspec[s3]
 
 USER odoo
